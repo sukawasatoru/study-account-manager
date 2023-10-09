@@ -82,9 +82,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
         log("[MainActivity][onCreate] acrossReboots(${savedInstanceState != null}, ${persistentState != null})")
 
+        persistAcrossReboots = true
+
         super.onCreate(savedInstanceState, persistentState)
 
+        // after onCreate(Bundle).
+
         if (savedInstanceState == null && persistentState != null) {
+            // only acrossReboots
             log("[MainActivity][onCreate] acrossReboots restore")
 
             val datetime = persistentState.getString(KEY_STATE_DATETIME)
@@ -95,7 +100,6 @@ class MainActivity : ComponentActivity() {
                 return
             }
 
-            persistAcrossReboots = true
             vm.restoreActivity(name)
         }
     }
