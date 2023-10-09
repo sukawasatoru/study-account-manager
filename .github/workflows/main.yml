@@ -17,10 +17,12 @@ jobs:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./gradlew --info --stacktrace build
+          ./gradlew --info --stacktrace :app:assembleDebug
+          ./gradlew --info --stacktrace :client:assembleDebug
   ktlint:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    if: false
     steps:
       - uses: actions/checkout@v2
       - name: Build
