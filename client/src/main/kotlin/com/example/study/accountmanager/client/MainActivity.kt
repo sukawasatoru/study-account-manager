@@ -77,6 +77,9 @@ class MainActivity : ComponentActivity() {
 
     private val vm by viewModels<MainViewModel>()
 
+    /**
+     * Whether the `onCreate(Bundle?, PersistableBundle?)` should invoke restoring procedure or not.
+     */
     private var persistAcrossReboots = false
 
     override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
@@ -88,7 +91,7 @@ class MainActivity : ComponentActivity() {
 
         // after onCreate(Bundle).
 
-        if (savedInstanceState == null && persistentState != null) {
+        if (vm.initStep.value.needInit && persistentState != null) {
             // only acrossReboots
             log("[MainActivity][onCreate] acrossReboots restore")
 
@@ -116,7 +119,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val accounts by vm.accounts.collectAsState()
             val activeAccount by vm.activeAccount.collectAsState()
-            val restoring by vm.restoring.collectAsState()
+            val initStep by vm.initStep.collectAsState()
             val accessToken by vm.activeAccessToken.collectAsState()
 
             MaterialTheme {
@@ -125,7 +128,7 @@ class MainActivity : ComponentActivity() {
                         accounts = accounts,
                         activeAccount = activeAccount,
                         accessToken = accessToken,
-                        restoring = restoring,
+                        initStep = initStep,
                         addAccount = { vm.addAccount(this) },
                         getAccounts = { vm.getAccounts() },
                         getAuthToken = { vm.getAuthToken() },
@@ -202,7 +205,7 @@ fun MainView(
     accounts: List<Account>,
     activeAccount: Account?,
     accessToken: AccessToken?,
-    restoring: Boolean,
+    initStep: MainViewModel.InitStep,
     addAccount: () -> Unit,
     getAccounts: () -> Unit,
     getAuthToken: () -> Unit,
@@ -214,7 +217,7 @@ fun MainView(
             Text("Client")
         }
 
-        if (restoring) {
+        if (!initStep.initialized) {
             return@Column
         }
 
@@ -286,8 +289,8 @@ fun MainView(
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(application: Application) : AndroidViewModel(application) {
-    private val _restoring = MutableStateFlow(true)
-    val restoring: StateFlow<Boolean> = _restoring
+    private val _initStep = MutableStateFlow(InitStep.Instantiated)
+    val initStep: StateFlow<InitStep> = _initStep
 
     private val _accounts = MutableStateFlow<List<Account>>(listOf())
     val accounts: StateFlow<List<Account>> = _accounts
@@ -487,31 +490,30 @@ class MainViewModel @Inject constructor(application: Application) : AndroidViewM
     fun restoreActivity(activeAccountName: String) {
         log("[MainViewModel][restoreActivity]")
 
+        _initStep.value = InitStep.Initializing
+
         viewModelScope.launch {
-            _restoring.value = true
-            try {
-                val prevList = accounts.value
-                getAccounts()
+            val prevList = accounts.value
+            getAccounts()
 
-                // compare reference for wait loading.
-                accounts.filter { it !== prevList }
-                    .first()
+            // compare reference for wait loading.
+            accounts.filter { it !== prevList }
+                .first()
 
-                val account = accounts.value.find { it.name == activeAccountName }
-                if (account != null) {
-                    _activeAccount.value = account
-                }
-            } finally {
-                log("[MainViewModel][restoreActivity] restored")
-                _restoring.value = false
+            val account = accounts.value.find { it.name == activeAccountName }
+            if (account != null) {
+                _activeAccount.value = account
             }
+        }.invokeOnCompletion {
+            log("[MainViewModel][restoreActivity] initialized")
+            _initStep.value = InitStep.Initialized
         }
     }
 
     fun restored() {
         log("[MainViewModel][restored]")
 
-        _restoring.value = false
+        _initStep.value = InitStep.Initialized
     }
 
     private fun <T : Parcelable> getParcelable(bundle: Bundle, key: String, clazz: Class<T>): T? {
@@ -521,5 +523,29 @@ class MainViewModel @Inject constructor(application: Application) : AndroidViewM
             @Suppress("DEPRECATION")
             bundle.getParcelable(key)
         }
+    }
+
+    enum class InitStep {
+        Instantiated,
+        Initializing,
+        Initialized;
+
+        val needInit: Boolean
+            get() {
+                return when (this) {
+                    Instantiated -> true
+                    Initializing -> false
+                    Initialized -> false
+                }
+            }
+
+        val initialized: Boolean
+            get() {
+                return when (this) {
+                    Instantiated -> false
+                    Initializing -> false
+                    Initialized -> true
+                }
+            }
     }
 }
