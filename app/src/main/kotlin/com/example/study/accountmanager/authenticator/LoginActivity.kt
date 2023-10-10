@@ -170,7 +170,7 @@ class LoginActivity : ComponentActivity() {
         res?.onResult(intent.extras)
 
         setResult(RESULT_OK, intent)
-        finish()
+        finishAndRemoveTask()
 
         // help gc.
         res = null
@@ -182,7 +182,7 @@ class LoginActivity : ComponentActivity() {
         res?.onError(AccountManager.ERROR_CODE_CANCELED, "cancelled")
 
         setResult(RESULT_CANCELED)
-        finish()
+        finishAndRemoveTask()
 
         // help gc.
         res = null
