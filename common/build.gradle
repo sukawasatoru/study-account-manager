@@ -9,6 +9,13 @@ kotlin {
 
 android {
     namespace 'com.example.study.accountmanager.common'
+
+    buildTypes {
+        benchmark {
+            initWith(debug)
+            matchingFallbacks += 'release'
+        }
+    }
 }
 
 dependencies {

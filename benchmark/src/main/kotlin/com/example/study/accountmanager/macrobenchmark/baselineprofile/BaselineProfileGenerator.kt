@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package jp.tinyport.tinyapplication.macrobenchmark.baselineprofile
+package com.example.study.accountmanager.macrobenchmark.baselineprofile
 
+import android.content.ComponentName
+import android.content.Intent
 import androidx.benchmark.macro.ExperimentalBaselineProfilesApi
 import androidx.benchmark.macro.junit4.BaselineProfileRule
 import org.junit.Rule
@@ -27,8 +29,23 @@ class BaselineProfileGenerator {
     val baselineProfileRule = BaselineProfileRule()
 
     @Test
-    fun startup() {
-        baselineProfileRule.collectBaselineProfile("jp.tinyport.tinyapplication") {
+    fun startupLoginActivity() {
+        baselineProfileRule.collectBaselineProfile("com.example.study.accountmanager.authenticator") {
+            startActivityAndWait(
+                Intent()
+                    .setComponent(
+                        ComponentName.createRelative(
+                            "com.example.study.accountmanager.authenticator",
+                            ".LoginActivity",
+                        ),
+                    ),
+            )
+        }
+    }
+
+    @Test
+    fun startupClientMainActivity() {
+        baselineProfileRule.collectBaselineProfile("com.example.study.accountmanager.client") {
             startActivityAndWait()
         }
     }

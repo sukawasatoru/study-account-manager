@@ -67,7 +67,7 @@ class LoginActivity : ComponentActivity() {
                 Surface(Modifier.fillMaxSize()) {
                     Column {
                         ProvideTextStyle(MaterialTheme.typography.h1) {
-                            Text("LoginActivity")
+                            Text("Login")
                         }
                         Button(::login) { Text("Login") }
                         Button(::cancel) { Text("Cancel") }

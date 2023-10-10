@@ -3,10 +3,14 @@ plugins {
     alias libs.plugins.kotlin.android
 }
 
-android {
-    namespace 'jp.tinyport.tinyapplication.macrobenchmark'
+kotlin {
+    jvmToolchain 17
+}
 
-    targetProjectPath = ':app'
+android {
+    namespace 'com.example.study.accountmanager.macrobenchmark'
+
+    targetProjectPath = System.getProperty("targetProject") ?: ':app'
     experimentalProperties['android.experimental.self-instrumenting'] = true
 
     defaultConfig {
