@@ -105,7 +105,7 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 android-test = { id = "com.android.test", version.ref = "agp" }
 apollo = { id = "com.apollographql.apollo", version.ref = "apollo" }
-ksp = "com.google.devtools.ksp:1.6.21-1.0.6"
+ksp = "com.google.devtools.ksp:1.9.21-1.0.15"
 protobuf = "com.google.protobuf:0.9.2"
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
